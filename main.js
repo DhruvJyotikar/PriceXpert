@@ -1,6 +1,10 @@
 ﻿'use strict';
 
-const API_BASE = (typeof window !== 'undefined' && window.location.port === '3001') ? '' : 'http://localhost:3001';
+const API_BASE = window.PRICE_XPERT_API_BASE || (
+  ['localhost', '127.0.0.1'].includes(window.location.hostname) && window.location.port !== '3001'
+    ? 'http://localhost:3001'
+    : ''
+);
 const PLATFORMS = {
   amazon: ['Amazon India', '🛒'],
   flipkart: ['Flipkart', '🎯'],
