@@ -1,18 +1,53 @@
-# Deployment
+# PriceXpert Deployment Guide
 
-## Cloudflare Pages
+PriceXpert includes both an interactive frontend and a Node.js Express backend that uses headless Chromium via Playwright for live price scraping.
 
-PriceXpert's browser UI can be deployed as a static Cloudflare Pages site:
+Because Playwright requires browser binaries and system OS dependencies, deploy using one of the free cloud container/Node hosts below.
 
-- Framework preset: **None**
-- Build command: **`npm run build`**
-- Build output directory: **`dist`**
-- Root directory: the repository root
+---
 
-The build copies `index.html`, `main.js`, and `style.css` into `dist` and generates `api-config.js`. If the comparison API is hosted separately, set the Pages build environment variable `PRICE_XPERT_API_BASE` to that service's HTTPS origin (for example, `https://api.example.com`). The browser then calls `/api/compare` on that API. If unset, deployed pages use their own origin for `/api` requests.
+## Option 1: Render (Recommended — 100% Free)
 
-## Backend API
+Render can deploy PriceXpert directly from your GitHub repo (`https://github.com/DhruvJyotikar/PriceXpert`).
 
-`server.js` and the Node branch of `app.js` are Express backend entry points. They expose `/api/compare`, `/api/detect`, and `/api/health`, and use Playwright Chromium with a stealth plugin to fetch product data. Cloudflare Pages static hosting does not run this Express server or its browser automation. Keep the backend intact and deploy it separately to a Node.js host that supports long-running Express processes and Playwright's Chromium runtime and OS dependencies. Configure that host to allow browser requests from the deployed Pages domain if its CORS policy is restricted.
+### Steps:
+1. Go to [render.com](https://render.com) and log in with your GitHub account.
+2. Click **New +** > **Web Service**.
+3. Select **Build and deploy from a Git repository** and connect `DhruvJyotikar/PriceXpert`.
+4. Configure the service settings:
+   - **Name**: `pricexpert`
+   - **Region**: Choose any (e.g. Oregon / Frankfurt / Singapore)
+   - **Branch**: `main`
+   - **Runtime**: `Node`
+   - **Build Command**:
+     ```bash
+     npm install && npx playwright install --with-deps chromium
+     ```
+   - **Start Command**:
+     ```bash
+     npm start
+     ```
+   - **Instance Type**: **Free**
+5. Click **Create Web Service**.
+6. Once built, Render will give you a public URL (e.g. `https://pricexpert.onrender.com`). Both the UI and the live scraper will be live on this single URL!
 
-For local development, `npm start` starts the API on port `3001` and the UI on port `7890`; the UI continues to use `http://localhost:3001` by default.
+---
+
+## Option 2: Railway
+
+1. Go to [railway.app](https://railway.app) and log in with GitHub.
+2. Click **New Project** > **Deploy from GitHub repo**.
+3. Select `DhruvJyotikar/PriceXpert`.
+4. Railway will automatically detect the `Dockerfile` in the repository and build it.
+5. In your service settings, click **Generate Domain** to get your public live URL.
+
+---
+
+## Option 3: Docker (Any VPS / Cloud)
+
+Run with Docker:
+```bash
+docker build -t pricexpert .
+docker run -d -p 3001:3001 --name pricexpert pricexpert
+```
+Visit `http://localhost:3001` or your server IP.
